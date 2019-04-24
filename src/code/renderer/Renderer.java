@@ -11,7 +11,7 @@ import java.util.Vector;
 public class Renderer extends GUI {
 
 	public ArrayList<Scene.Polygon> polygons = new ArrayList<>();
-	public ArrayList<Vector3D> vectors = new ArrayList<>();
+	public Vector3D lightSource;
 
 	@Override
 	protected void onLoad(File file) {
@@ -24,56 +24,65 @@ public class Renderer extends GUI {
 			BufferedReader buf = new BufferedReader(new FileReader(file));
 			String[] currentLine;
 			String lineJustFetched;
-			String firstLine;
 
-			//DECLARING VARIABLES TO STORE INFO
-			int R, G ,B;
-			float x,y,z;
-			int numLines;
+			//DECLARING VARIABLES FOR STORING INFO
+			int R, G, B;                                //Colour
+			float x1, y1, z1, x2, y2, z2, x3, y3, z3;    //Points
+			float a, b, c;                                //LightSource
 
 			//SKIP FIRST LINE
-			firstLine = buf.readLine();
-			numLines = Integer.parseInt(firstLine);
+			buf.readLine();
 
 			//LOAD INFO
 			for (lineJustFetched = buf.readLine(); lineJustFetched != null; lineJustFetched = buf.readLine()) {
 
 				currentLine = lineJustFetched.split(",");
 
-				List<String> colours = new ArrayList<>();
-				List<String> points = new ArrayList<>();
+				if (currentLine.length > 4) {
+					List<String> colours = new ArrayList<>();
+					List<String> points = new ArrayList<>();
 
-				//COLOUR VALUES
-				R = Integer.parseInt(currentLine[0]);
-				G = Integer.parseInt(currentLine[1]);
-				B = Integer.parseInt(currentLine[2]);
-				Color c = new Color(R,G,B);
+					//COLOR VALUES
+					R = Integer.parseInt(currentLine[0]);
+					G = Integer.parseInt(currentLine[1]);
+					B = Integer.parseInt(currentLine[2]);
+					Color c = new Color(R, G, B);
 
 
-				for (int i = 3; i != currentLine.length; i++) {
-					points.add(currentLine[i]);
-				}
+					//FIRST CO-ORD SET
+					x1 = Float.parseFloat(currentLine[3]);
+					y1 = Float.parseFloat(currentLine[4]);
+					z1 = Float.parseFloat(currentLine[5]);
+					Vector3D v1 = new Vector3D(x1, y1, z1);
 
-				for(int i = 0; i < points.size(); i += 3 ){
-					x = Float.parseFloat(currentLine[i]);
-					y = Float.parseFloat(currentLine[i+1]);
-					z = Float.parseFloat(currentLine[i+2]);
-					Vector3D v = new Vector3D(x,y,z);
-					vectors.add(v);
+					//SECOND CO-ORD SET
+					x2 = Float.parseFloat(currentLine[6]);
+					y2 = Float.parseFloat(currentLine[7]);
+					z2 = Float.parseFloat(currentLine[8]);
+					Vector3D v2 = new Vector3D(x2, y2, z2);
+
+					//THIRD CO-ORD SET
+					x3 = Float.parseFloat(currentLine[9]);
+					y3 = Float.parseFloat(currentLine[10]);
+					z3 = Float.parseFloat(currentLine[11]);
+					Vector3D v3 = new Vector3D(x3, y3, z3);
+
+					//CREATE POLYGON & ADD TO LIST
+					Scene.Polygon p = new Scene.Polygon(v1, v2, v3, c);
+					polygons.add(p);
+				} else if (currentLine.length == 3) {
+					a = Float.parseFloat(currentLine[0]);
+					b = Float.parseFloat(currentLine[1]);
+					c = Float.parseFloat(currentLine[2]);
+					lightSource = new Vector3D(a, b, c);
 				}
 			}
-
-				//CREATE POLYGON & ADD TO LIST
-
-
-				Scene.Polygon p = new Scene.Polygon(v1,v2,v3,c);
-				polygons.add(p);
-
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
 
 		@Override
