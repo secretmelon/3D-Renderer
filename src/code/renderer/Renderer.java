@@ -43,7 +43,7 @@ public class Renderer extends GUI {
 				List<String> colours = new ArrayList<>();
 				List<String> points = new ArrayList<>();
 
-				//COLOR VALUES
+				//COLOUR VALUES
 				R = Integer.parseInt(currentLine[0]);
 				G = Integer.parseInt(currentLine[1]);
 				B = Integer.parseInt(currentLine[2]);
