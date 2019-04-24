@@ -70,7 +70,8 @@ public class Renderer extends GUI {
 					//CREATE POLYGON & ADD TO LIST
 					Scene.Polygon p = new Scene.Polygon(v1, v2, v3, c);
 					polygons.add(p);
-				} else if (currentLine.length == 3) {
+				}
+				else if (currentLine.length == 3) {
 					a = Float.parseFloat(currentLine[0]);
 					b = Float.parseFloat(currentLine[1]);
 					c = Float.parseFloat(currentLine[2]);
