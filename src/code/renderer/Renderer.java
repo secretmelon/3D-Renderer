@@ -26,9 +26,9 @@ public class Renderer extends GUI {
 			String lineJustFetched;
 
 			//DECLARING VARIABLES FOR STORING INFO
-			int R, G, B;                                //Colour
+			int R, G, B;                                 //Colour
 			float x1, y1, z1, x2, y2, z2, x3, y3, z3;    //Points
-			float a, b, c;                                //LightSource
+			float a, b, c;                               //LightSource
 
 			//SKIP FIRST LINE
 			buf.readLine();
@@ -39,15 +39,12 @@ public class Renderer extends GUI {
 				currentLine = lineJustFetched.split(",");
 
 				if (currentLine.length > 4) {
-					List<String> colours = new ArrayList<>();
-					List<String> points = new ArrayList<>();
 
 					//COLOR VALUES
 					R = Integer.parseInt(currentLine[0]);
 					G = Integer.parseInt(currentLine[1]);
 					B = Integer.parseInt(currentLine[2]);
-					Color c = new Color(R, G, B);
-
+					Color col = new Color(R, G, B);
 
 					//FIRST CO-ORD SET
 					x1 = Float.parseFloat(currentLine[3]);
@@ -68,7 +65,7 @@ public class Renderer extends GUI {
 					Vector3D v3 = new Vector3D(x3, y3, z3);
 
 					//CREATE POLYGON & ADD TO LIST
-					Scene.Polygon p = new Scene.Polygon(v1, v2, v3, c);
+					Scene.Polygon p = new Scene.Polygon(v1, v2, v3, col);
 					polygons.add(p);
 				}
 				else if (currentLine.length == 3) {
@@ -78,15 +75,13 @@ public class Renderer extends GUI {
 					lightSource = new Vector3D(a, b, c);
 				}
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
+		catch (IOException e) {e.printStackTrace();}
 	}
 
 
-		@Override
+	@Override
 	protected void onKeyPress(KeyEvent ev) {
 		// TODO fill this in.
 

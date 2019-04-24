@@ -2,6 +2,7 @@ package code.renderer;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * The Scene class is where we store data about a 3D model and light source
@@ -15,18 +16,20 @@ import java.util.List;
  */
 public class Scene {
 
+	private List<Polygon> polygonList;
+	private Vector3D lightSource;
+
 	public Scene(List<Polygon> polygons, Vector3D lightPos) {
-          // TODO fill this in.
+          this.polygonList = polygons;
+          this.lightSource = lightPos;
 	}
 
 	public Vector3D getLight() {
-          // TODO fill this in.
-          return null;
+          return lightSource;
 	}
 
 	public List<Polygon> getPolygons() {
-          // TODO fill this in.
-          return null;
+          return polygonList;
 	}
 
 	/**
