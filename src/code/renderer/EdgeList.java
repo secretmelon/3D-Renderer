@@ -9,18 +9,22 @@ package code.renderer;
  * an addRow(y, xLeft, xRight, zLeft, zRight) method.
  */
 public class EdgeList {
+
+	private int startY;
+	private int endY;
+
 	public EdgeList(int startY, int endY) {
-		// TODO fill this in.
+		this.startY = startY;
+		this.endY = endY;
 	}
 
 	public int getStartY() {
-		// TODO fill this in.
-		return 0;
+		return startY;
+
 	}
 
 	public int getEndY() {
-		// TODO fill this in.
-		return 0;
+		return endY;
 	}
 
 	public float getLeftX(int y) {
