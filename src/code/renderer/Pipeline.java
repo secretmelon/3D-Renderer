@@ -40,29 +40,34 @@ public class Pipeline {
 
 		Vector3D 	normal 		= computeUnitNormal(poly);
 		Color 		reflectance = poly.getReflectance();
+		float 		cosTheta 	= normal.cosTheta(lightDirection);
 
-		double cosTheta	= (Math.acos(normal.cosTheta(lightDirection)));
-		//double cosTheta = (normal.cosTheta(lightDirection));
+		//CREATE ARRAYS TO MANIPULATE SPECIFIC COLOUR VALUES
+		int[] ALColour 	= {ambientLight.getRed(), ambientLight.getGreen(),ambientLight.getBlue()};
+		int[] ILColour	= {lightColor.getRed(),lightColor.getGreen(), lightColor.getBlue()};
+		int[] RColour	= {reflectance.getRed(),reflectance.getGreen(),reflectance.getBlue()};
 
-
-		int[] ambientLightARR 	= {ambientLight.getRed(), ambientLight.getGreen(),ambientLight.getBlue()};
-		int[] indicentLightARR	= {lightColor.getRed(),lightColor.getGreen(), lightColor.getBlue()};
-		int[] reflectanceARR	= {reflectance.getRed(),reflectance.getGreen(),reflectance.getBlue()};
-		int[] shadingARR 		= new int[3];
+		//INITIALISE SHADE COLOUR ARRAY
+		int[] shading = new int[3];
 
 		for(int i = 0; i < 3; i++){
-			int ambientLI  = ambientLightARR[i] / 255; //   /reflectanceARR[[i]
-			int indicentLI = (int) (indicentLightARR[i] / (reflectanceARR[i] * cosTheta));
 
-			int diffuseColor = (int) (indicentLightARR[i] * indicentLI * ambientLightARR[i] * cosTheta);
-			shadingARR[i] = (int) (ambientLightARR[i] + diffuseColor);
+			//FIND INTENSITIES
+			float ambientLI  = ALColour[i] / 255.0f;
+			float incidentLI = ILColour[i] / 255.0f;
+
+			//SHADING = (AMB.LIGHT INTENSITY x REFLECTANCE) + (INCI.LIGHT INTENSITY x REFLECTANCE x ANGLE
+			shading[i] = (int) ((ambientLI * RColour[i]) + (incidentLI * RColour[i]) * cosTheta);
+
+			//NO NEGATIVE VALUES
+			if (shading[i] < 0){
+				shading[i] += 255;
+			}
 		}
+		//TROUBLE-SHOOTING
+		System.out.println("Color: " + shading[0] +" "+  shading[1] +" " + shading[2]);
 
-		System.out.println("Color: " + shadingARR[0] +" "+  shadingARR[1] +" " + shadingARR[2]);
-
-		Color shading = new Color(shadingARR[0], shadingARR[1], shadingARR[2]);
-
-		return shading;
+		return new Color(shading[0], shading[1], shading[2]);
 	}
 
 	/**
