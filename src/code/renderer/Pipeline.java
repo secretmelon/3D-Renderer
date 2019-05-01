@@ -1,6 +1,10 @@
 package code.renderer;
 
 import java.awt.Color;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 
 /**
@@ -87,8 +91,23 @@ public class Pipeline {
 	 *         rotated accordingly.
 	 */
 	public static Scene rotateScene(Scene scene, float xRot, float yRot) {
-		// TODO fill this in.
-		return null;
+		List<Scene.Polygon> preRotation  = scene.getPolygons();
+		List<Scene.Polygon> postRotation = new ArrayList<>(preRotation);
+		Transform xAxis = Transform.newXRotation(xRot);
+		Transform yAxis = Transform.newYRotation(yRot);
+		Vector3D light  = scene.getLight();
+
+		for(Scene.Polygon p : postRotation){
+			Vector3D[] vList = p.getVertices();
+
+			for(int v = 0; v < vList.length; v++){
+				if(xRot != 0.0f){vList[v] = xAxis.multiply(vList[v]);}
+				if(yRot != 0.0f){vList[v] = yAxis.multiply(vList[v]);}
+			}
+		}
+		if(xRot != 0.0f){light = xAxis.multiply(light);}
+		if(yRot != 0.0f){light = yAxis.multiply(light);}
+		return new Scene(postRotation, light);
 	}
 
 	/**
@@ -148,8 +167,7 @@ public class Pipeline {
 		Vector3D v1 = poly.getVertices()[0];
 		Vector3D v2 = poly.getVertices()[1];
 		Vector3D v3 = poly.getVertices()[2];
-		Vector3D normal = v2.minus(v1).crossProduct(v3.minus(v2)).unitVector();
-		return normal;
+		return v2.minus(v1).crossProduct(v3.minus(v2)).unitVector();
 	}
 }
 
