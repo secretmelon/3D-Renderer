@@ -22,8 +22,13 @@ public class Pipeline {
 	 * should be hidden), and false otherwise.
 	 */
 	public static boolean isHidden(Scene.Polygon poly) {
-		float zValue = computeUnitNormal(poly).z;
-		return zValue < 0;
+		Vector3D v1 = poly.getVertices()[0];
+		Vector3D v2 = poly.getVertices()[1];
+		Vector3D v3 = poly.getVertices()[2];
+		Vector3D normal = v2.minus(v1).crossProduct(v3.minus(v2)).unitVector();
+
+		float zValue = normal.z;
+		return zValue > 0;
 	}
 
 	/**
@@ -42,7 +47,12 @@ public class Pipeline {
 	 */
 	public static Color getShading(Scene.Polygon poly, Vector3D lightDirection, Color lightColor, Color ambientLight) {
 
-		Vector3D 	normal 		= computeUnitNormal(poly);
+		//FIND NORMAL
+		Vector3D v1 = poly.getVertices()[0];
+		Vector3D v2 = poly.getVertices()[1];
+		Vector3D v3 = poly.getVertices()[2];
+		Vector3D 	normal 		= v2.minus(v1).crossProduct(v3.minus(v2)).unitVector();
+
 		Color 		reflectance = poly.getReflectance();
 		float 		cosTheta 	= normal.cosTheta(lightDirection);
 
@@ -91,22 +101,33 @@ public class Pipeline {
 	 *         rotated accordingly.
 	 */
 	public static Scene rotateScene(Scene scene, float xRot, float yRot) {
+		//DIDN'T REALISE I WASN'T SUPPOSED TO IMPLEMENT THIS YET... WAS TOO FOCUSED ON PASSING THE TESTS FIRST
+		//DUMBASS
+
 		List<Scene.Polygon> preRotation  = scene.getPolygons();
 		List<Scene.Polygon> postRotation = new ArrayList<>(preRotation);
+
+		//CREATE TRANSFORM OBJECTS FOR EACH AXIS
 		Transform xAxis = Transform.newXRotation(xRot);
 		Transform yAxis = Transform.newYRotation(yRot);
-		Vector3D light  = scene.getLight();
 
+		//ROTATE EACH POLYGON IN SCENE
 		for(Scene.Polygon p : postRotation){
 			Vector3D[] vList = p.getVertices();
 
+			//ROTATE EVERY VERTEX IF THERE IS A ROTATION VALUE
 			for(int v = 0; v < vList.length; v++){
 				if(xRot != 0.0f){vList[v] = xAxis.multiply(vList[v]);}
 				if(yRot != 0.0f){vList[v] = yAxis.multiply(vList[v]);}
 			}
 		}
+
+		//ROTATE THE DIRECTION OF LIGHT
+		Vector3D light  = scene.getLight();
 		if(xRot != 0.0f){light = xAxis.multiply(light);}
 		if(yRot != 0.0f){light = yAxis.multiply(light);}
+
+		//RETURN ROTATED SCENE
 		return new Scene(postRotation, light);
 	}
 
@@ -136,9 +157,73 @@ public class Pipeline {
 	 * Computes the edgelist of a single provided polygon, as per the lecture
 	 * slides.
 	 */
-	public static EdgeList computeEdgeList(Scene.Polygon poly) {
-		// TODO fill this in.
-		return null;
+	public static EdgeList computeEdgeList(Scene.Polygon poly){
+		Vector3D[] vertices = poly.getVertices();
+		int ymin = (int) (Double.POSITIVE_INFINITY);
+		int ymax = (int) (Double.NEGATIVE_INFINITY);
+
+		//GO THROUGH EVERY VERTEX AND SET MIN AND MAX Y VALUES
+		for(Vector3D vertex : vertices){
+			if(vertex.y < ymin){
+				ymin = Math.round(vertex.y);
+			}
+			else if(vertex.y > ymax){
+				ymax = Math.round(vertex.y);
+			}
+
+
+		}
+
+		EdgeList edges = new EdgeList(ymin,ymax);
+		Vector3D a, b;
+
+		for(int v = 0; v < 3; v++){
+			//ANTI-CLOCKWISE ORDER
+			if(v != 2){
+				a = vertices[v];
+				b = vertices[v+1];
+			}
+			//IF AT V3, THEN B GOES BACK TO V1
+			else{
+				a = vertices[v];
+				b = vertices[0];
+			}
+
+			//SLOPES
+			float mX = (b.x - a.x) / (b.y - a.y);
+			float mZ = (b.z - a.z) / (b.y - a.y);
+
+			// X Y Z VALUES
+			float x = a.x;
+			int y = Math.round(a.y);
+			float z = a.z;
+
+			//GOING DOWN
+			if(a.y < b.y){
+				while(y <= Math.round(b.y)){
+					edges.setLeftX(y,x);
+					edges.setLeftZ(y,z);
+					x = x + mX;
+					z = z + mZ;
+					y++;
+
+				}
+
+			}
+
+			//GOING UP
+			else if (a.y > b.y){
+				while(y >= Math.round(b.y)){
+					edges.setRightX(y,x);
+					edges.setRightZ(y,z);
+					x = x - mX;
+					z = z - mZ;
+					y--;
+				}
+			}
+
+		}
+		return edges;
 	}
 
 	/**
@@ -154,20 +239,29 @@ public class Pipeline {
 	 * @param zdepth
 	 *            A double array of floats storing the z-value of each pixel
 	 *            that has been coloured in so far.
-	 * @param polyEdgeList
+	 * @param edges
 	 *            The edgelist of the polygon to add into the zbuffer.
 	 * @param polyColor
 	 *            The colour of the polygon to add into the zbuffer.
 	 */
-	public static void computeZBuffer(Color[][] zbuffer, float[][] zdepth, EdgeList polyEdgeList, Color polyColor) {
-		// TODO fill this in.
-	}
+	public static void computeZBuffer(Color[][] zbuffer, float[][] zdepth, EdgeList edges, Color polyColor) {
+		//DONT KNOW WTF IS GOING ON HERE, LITERALLY COPIED THE LECTURE SLIDES
 
-	private static Vector3D computeUnitNormal(Scene.Polygon poly) {
-		Vector3D v1 = poly.getVertices()[0];
-		Vector3D v2 = poly.getVertices()[1];
-		Vector3D v3 = poly.getVertices()[2];
-		return v2.minus(v1).crossProduct(v3.minus(v2)).unitVector();
+		for(int y = edges.getStartY(); y < edges.getEndY(); y++) {
+			float slope = (edges.getRightZ(y) - edges.getLeftZ(y)) / (edges.getRightX(y) - edges.getLeftX(y));
+			int x = Math.round(edges.getLeftX(y));
+			float z = edges.getLeftZ(y) + slope * (x - edges.getLeftX(y));
+
+			while (x < Math.round(edges.getRightX(y))) {
+				//MAKING SURE WE DON'T GO OUT OF THE CANVAS SIZE
+				if ((y >= 0 && y < GUI.CANVAS_HEIGHT) && (x >= 0 && x < GUI.CANVAS_WIDTH) && (z < zdepth[x][y])){
+					zbuffer[x][y] = polyColor;
+					zdepth[x][y] = z;
+				}
+				z = z + slope;
+				x++;
+			}
+		}
 	}
 }
 
